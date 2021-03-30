@@ -7,7 +7,8 @@ from navigation.preprocessors import PreprocessorInterface
 
 
 class EnvWrapper:
-    """Wrap the Unity environment into a format similar to gym environments.
+    """Wrap the Unity environment into a format similar to single agents gym
+    environments.
 
     Call the preprocessor on observations before sending them back to the agent.
     """
@@ -34,10 +35,15 @@ class EnvWrapper:
 
     def step(self, action: int) -> Tuple:
         env_info = self.env.step(action)[self.brain_name]
-        assert len(env_info.rewards) == 1
+        assert (
+            len(env_info.rewards)
+            == len(env_info.local_done)
+            == env_info.vector_observations.shape[0]
+            == 1
+        ), "More than one agent found for this environment."
         return (
             env_info.vector_observations,
             env_info.rewards[0],
-            env_info.local_done,
+            env_info.local_done[0],
             None,
         )
