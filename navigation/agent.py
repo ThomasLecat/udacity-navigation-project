@@ -4,7 +4,8 @@ import numpy as np
 import torch
 from navigation.environment import EnvWrapper
 from navigation.model import MultilayerPerceptron
-from navigation.replay_buffer import ReplayBufferInterface, UniformReplayBuffer
+from navigation.replay_buffer import ReplayBufferInterface
+from navigation.scheduler import SchedulerInterface
 
 
 NumberOfSteps = int
@@ -16,7 +17,7 @@ class ExtendedDQN:
         env: EnvWrapper,
         replay_buffer: ReplayBufferInterface,
         batch_size: int,
-        epsilon: float,
+        epsilon_scheduler: SchedulerInterface,
         discount_factor: float,
         learning_rate: float,
         learning_start: NumberOfSteps,
@@ -28,7 +29,7 @@ class ExtendedDQN:
         self.env: EnvWrapper = env
         self.replay_buffer: ReplayBufferInterface = replay_buffer
         self.batch_size: int = batch_size
-        self.epsilon: float = epsilon
+        self.epsilon_scheduler: SchedulerInterface = epsilon_scheduler
         self.target_network_update_coefficient = target_network_update_coefficient
         self.discount_factor: float = discount_factor
         self.learning_start: NumberOfSteps = learning_start
@@ -59,8 +60,8 @@ class ExtendedDQN:
             params=self.q_network.parameters(), lr=learning_rate
         )
 
-    def compute_action(self, observation: np.ndarray) -> int:
-        if np.random.uniform(0, 1) > self.epsilon:
+    def compute_action(self, observation: np.ndarray, epsilon: float) -> int:
+        if np.random.uniform(0, 1) > epsilon:
             with torch.no_grad():
                 observation = torch.Tensor(observation).to(self.device)
                 # Create fake batch dimension of one
@@ -80,13 +81,15 @@ class ExtendedDQN:
             if episode_idx % self.log_frequency == 0:
                 print(
                     f"episode {episode_idx}/{num_episodes}, "
-                    f"average episode reward: {cumulative_reward/self.log_frequency}"
+                    f"average episode reward: {cumulative_reward/self.log_frequency}, "
+                    f"num steps sampled: {num_steps_sampled}"
                 )
                 cumulative_reward = 0.0
             observation = self.env.reset()
             episode_length: int = 0
             while True:
-                action = self.compute_action(observation)
+                epsilon = self.epsilon_scheduler.get_value(num_steps_sampled)
+                action = self.compute_action(observation, epsilon)
                 next_obs, reward, done, _ = self.env.step(action)
                 self.replay_buffer.add(observation, action, reward, done, next_obs)
                 cumulative_reward += reward
@@ -94,7 +97,7 @@ class ExtendedDQN:
                 episode_length += 1
                 if episode_length % self.update_frequency == 0 and num_steps_sampled > self.learning_start:
                     self.update_once()
-                if done:
+                if done is True:
                     break
             num_steps_sampled += episode_length
 
