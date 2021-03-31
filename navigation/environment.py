@@ -1,9 +1,8 @@
 from typing import Tuple
 
 import numpy as np
-from unityagents import UnityEnvironment
-
 from navigation.preprocessors import PreprocessorInterface
+from unityagents import UnityEnvironment
 
 
 class SingleAgentEnvWrapper:

@@ -3,12 +3,12 @@ from collections import deque, namedtuple
 
 import numpy as np
 
-
 SampleBatch = namedtuple(
     "SampleBatch", ["observations", "actions", "rewards", "dones", "next_observations"]
 )
 TorchSampleBatch = namedtuple(
-    "TorchSampleBatch", ["observations", "actions", "rewards", "dones", "next_observations"]
+    "TorchSampleBatch",
+    ["observations", "actions", "rewards", "dones", "next_observations"],
 )
 
 

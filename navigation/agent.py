@@ -104,7 +104,10 @@ class ExtendedDQN:
                 cumulative_reward += reward
                 observation = next_obs
                 episode_length += 1
-                if episode_length % self.update_frequency == 0 and num_steps_sampled > self.learning_start:
+                if (
+                    episode_length % self.update_frequency == 0
+                    and num_steps_sampled > self.learning_start
+                ):
                     self.update_once()
                 if done is True:
                     break
@@ -143,7 +146,7 @@ class ExtendedDQN:
 
     def soft_update_target_network(self):
         target_state_dict = self.target_q_network.state_dict()
-        for param_name, param_tensor in self.q_network.state_dict():
+        for param_name, param_tensor in self.q_network.state_dict().items():
             target_state_dict[param_name] = (
                 (1 - self.target_network_update_coefficient)
                 * target_state_dict[param_name]

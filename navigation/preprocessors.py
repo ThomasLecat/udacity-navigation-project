@@ -1,4 +1,5 @@
 import abc
+
 import numpy as np
 
 
@@ -14,6 +15,7 @@ class PreprocessorInterface:
 
 class IdentityPreprocessor(PreprocessorInterface):
     """Identity preprocessor"""
+
     def transform(self, observation):
         return observation
 
