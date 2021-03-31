@@ -10,7 +10,6 @@ repos:
       - id: isort
 
   - repo: https://github.com/python/black
-    # 19.10b0 requires gcc which is not installed on CI
     rev: 19.3b0
     hooks:
       - id: black
