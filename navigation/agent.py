@@ -114,16 +114,17 @@ class ExtendedDQN:
     def compute_loss(self, sample_batch):
         # Compute TD targets
         # (batch_size, obs_size)
-        next_obs = torch.Tensor(sample_batch["next_observations"]).to(self.device)
+        next_obs = torch.Tensor(sample_batch.next_observations).to(self.device)
         # (batch_size, num_actions)
         q_target_tp1 = self.target_q_network(next_obs)
         # (batch_size)
-        td_targets = sample_batch["rewards"] + self.discount_factor * q_target_tp1.max(
+        td_targets = sample_batch.rewards + self.discount_factor * q_target_tp1.max(
             axis=1
         )
+        # TODO: Set TD targets to 0 when done
         # Compute TD errors
         # (batch_size, obs_size)
-        observations = torch.Tensor(sample_batch["observations"]).to(self.device)
+        observations = torch.Tensor(sample_batch.observations).to(self.device)
         # (batch_size)
         q_values = self.q_network(observations)
         td_errors = q_values - td_targets
