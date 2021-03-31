@@ -10,6 +10,7 @@ from navigation.replay_buffer import (
     TorchSampleBatch,
 )
 from navigation.scheduler import SchedulerInterface
+from navigation.utils import OneHot
 
 
 NumberOfSteps = int
@@ -62,6 +63,10 @@ class ExtendedDQN:
         # Optimizer
         self.optimizer = torch.optim.Adam(
             params=self.q_network.parameters(), lr=learning_rate
+        )
+
+        self.one_hot = OneHot(
+            batch_size=batch_size, num_digits=self.num_actions, device=self.device,
         )
 
     def compute_action(self, observation: np.ndarray, epsilon: float) -> int:
@@ -126,9 +131,12 @@ class ExtendedDQN:
         )
         # TODO: Set TD targets to 0 when done
         # Compute TD errors
-        # (batch_size)
+        # (batch_size, num_actions)
         q_values = self.q_network(sample_batch.observations)
-        td_errors = q_values - td_targets
+        one_hot_actions = self.one_hot(sample_batch.actions)
+        # (batch_size)
+        selected_q_values = torch.sum(q_values * one_hot_actions, dim=1)
+        td_errors = selected_q_values - td_targets
         if self.clip_td_errors:
             td_errors = torch.clip(td_errors, -1, 1)
         return torch.sum(td_errors ** 2)
