@@ -138,7 +138,7 @@ class ExtendedDQN:
         selected_q_values = torch.sum(q_values * one_hot_actions, dim=1)
         td_errors = selected_q_values - td_targets
         if self.clip_td_errors:
-            td_errors = torch.clip(td_errors, -1, 1)
+            td_errors = torch.clamp(td_errors, -1, 1)
         return torch.sum(td_errors ** 2)
 
     def soft_update_target_network(self):
