@@ -22,6 +22,14 @@ navigation/ folder and unzip (or decompress) it.
 *  Windows (32-bit): click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86.zip)
 *  Windows (64-bit): click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86_64.zip)
 
+(Optional) To contribute, install the additional dependencies and pre-commits:
+
+```bash
+$ source activate drlnd
+$ pip install -r requirements.txt
+# pre-commit install
+```
+
 ## Description of the environment
 
 A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is 

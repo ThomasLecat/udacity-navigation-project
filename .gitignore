@@ -1,6 +1,9 @@
 # Banana Univty environment
 Banana.*
 
+# pre-commits files
+.isort.cfg
+
 # PyCharm files
 .idea
 
