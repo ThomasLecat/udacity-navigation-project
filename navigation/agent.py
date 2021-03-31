@@ -119,8 +119,8 @@ class ExtendedDQN:
         q_target_tp1 = self.target_q_network(next_obs)
         # (batch_size)
         td_targets = sample_batch.rewards + self.discount_factor * q_target_tp1.max(
-            axis=1
-        )
+            dim=1
+        )[0]
         # TODO: Set TD targets to 0 when done
         # Compute TD errors
         # (batch_size, obs_size)
