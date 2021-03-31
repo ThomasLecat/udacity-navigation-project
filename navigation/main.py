@@ -1,6 +1,7 @@
 from unityagents import UnityEnvironment
 
 from navigation.agent import ExtendedDQN
+from navigation.config import DQNConfig
 from navigation.environment import SingleAgentEnvWrapper
 from navigation.preprocessors import IdentityPreprocessor
 from navigation.replay_buffer import UniformReplayBuffer
@@ -8,29 +9,24 @@ from navigation.scheduler import LinearScheduler, Milestone
 
 
 def main():
+    config = DQNConfig
     preprocessor = IdentityPreprocessor()
     env = UnityEnvironment("Banana.app", no_graphics=True)
-    env = SingleAgentEnvWrapper(env, preprocessor, skip_frames=4)
-    replay_buffer = UniformReplayBuffer(buffer_size=1_000_000)
+    env = SingleAgentEnvWrapper(env, preprocessor, skip_frames=config.SKIP_FRAMES)
+    replay_buffer = UniformReplayBuffer(config.BUFFER_SIZE)
     epsilon_scheduler = LinearScheduler(
         [
-            Milestone(step=0, value=1.0),
-            Milestone(step=1_000_000, value=0.1),
+            Milestone(config.DECAY_START, config.EPSILON_START),
+            Milestone(config.DECAY_END, config.EPSILON_END),
         ]
     )
     agent = ExtendedDQN(
         env=env,
         replay_buffer=replay_buffer,
-        batch_size=32,
         epsilon_scheduler=epsilon_scheduler,
-        discount_factor=0.99,
-        learning_rate=0.0001,
-        learning_start=50_000,
-        target_network_update_coefficient=0.001,
-        clip_td_errors=True,
-        update_frequency=1,
+        config=config,
     )
-    agent.train(num_episodes=10000)
+    agent.train(num_episodes=500)
 
 
 if __name__ == "__main__":

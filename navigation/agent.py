@@ -1,8 +1,10 @@
 from collections import namedtuple
+from typing import ClassVar
 
 import numpy as np
 import torch
 
+from navigation.config import DQNConfig
 from navigation.environment import SingleAgentEnvWrapper
 from navigation.model import MultilayerPerceptron
 from navigation.replay_buffer import (
@@ -13,35 +15,19 @@ from navigation.replay_buffer import (
 from navigation.scheduler import SchedulerInterface
 from navigation.utils import OneHot
 
-NumberOfSteps = int
-
-LOG_FREQUENCY: NumberOfSteps = 100
-
 
 class ExtendedDQN:
     def __init__(
         self,
         env: SingleAgentEnvWrapper,
         replay_buffer: ReplayBufferInterface,
-        batch_size: int,
         epsilon_scheduler: SchedulerInterface,
-        discount_factor: float,
-        learning_rate: float,
-        learning_start: NumberOfSteps,
-        target_network_update_coefficient: float,
-        clip_td_errors: bool,
-        update_frequency: NumberOfSteps = 1,
+        config: ClassVar[DQNConfig],
     ):
         self.env: SingleAgentEnvWrapper = env
         self.replay_buffer: ReplayBufferInterface = replay_buffer
-        self.batch_size: int = batch_size
         self.epsilon_scheduler: SchedulerInterface = epsilon_scheduler
-        self.target_network_update_coefficient = target_network_update_coefficient
-        self.discount_factor: float = discount_factor
-        self.learning_start: NumberOfSteps = learning_start
-        self.clip_td_errors: bool = clip_td_errors
-        self.update_frequency: NumberOfSteps = update_frequency
-        self.num_actions: int = env.num_actions
+        self.config: ClassVar[DQNConfig] = config
 
         # Use GPU if available
         self.device = (
@@ -50,24 +36,24 @@ class ExtendedDQN:
 
         # Create networks
         obs_size: int = env.obs_size
+        self.num_actions: int = env.num_actions
         self.q_network = MultilayerPerceptron(
             input_size=obs_size, hidden_layers=[64, 64], output_size=self.num_actions
         ).to(self.device)
         self.target_q_network = MultilayerPerceptron(
             input_size=obs_size, hidden_layers=[64, 64], output_size=self.num_actions
         ).to(self.device)
-        self.target_q_network.parameters = self.q_network.parameters
-
-        # Logging parameters
-        self.log_frequency: NumberOfSteps = LOG_FREQUENCY
+        self.target_q_network.load_state_dict(self.q_network.state_dict())
 
         # Optimizer
         self.optimizer = torch.optim.Adam(
-            params=self.q_network.parameters(), lr=learning_rate
+            params=self.q_network.parameters(), lr=config.LEARNING_RATE
         )
 
         self.one_hot = OneHot(
-            batch_size=batch_size, num_digits=self.num_actions, device=self.device
+            batch_size=config.BATCH_SIZE,
+            num_digits=self.num_actions,
+            device=self.device,
         )
 
     def compute_action(self, observation: np.ndarray, epsilon: float) -> int:
@@ -88,10 +74,10 @@ class ExtendedDQN:
         cumulative_reward: float = 0.0
         num_steps_sampled: int = 0
         for episode_idx in range(1, num_episodes + 1):
-            if episode_idx % self.log_frequency == 0:
+            if episode_idx % self.config.LOG_EVERY == 0:
                 print(
                     f"episode {episode_idx}/{num_episodes}, "
-                    f"average episode reward: {cumulative_reward/self.log_frequency}, "
+                    f"average episode reward: {cumulative_reward / self.config.LOG_EVERY}, "
                     f"num steps sampled: {num_steps_sampled}"
                 )
                 cumulative_reward = 0.0
@@ -106,8 +92,8 @@ class ExtendedDQN:
                 observation = next_obs
                 episode_length += 1
                 if (
-                    episode_length % self.update_frequency == 0
-                    and num_steps_sampled > self.learning_start
+                    episode_length % self.config.UPDATE_EVERY == 0
+                    and num_steps_sampled > self.config.LEARNING_STARTS
                 ):
                     self.update_once()
                 if done is True:
@@ -117,7 +103,7 @@ class ExtendedDQN:
     def update_once(self):
         """Perform one SGD update."""
         self.optimizer.zero_grad()
-        sample_batch: namedtuple = self.replay_buffer.sample(self.batch_size)
+        sample_batch: namedtuple = self.replay_buffer.sample(self.config.BATCH_SIZE)
         loss = self.compute_loss(sample_batch)
         loss.backward()
         self.optimizer.step()
@@ -130,7 +116,7 @@ class ExtendedDQN:
         # (batch_size, num_actions)
         q_target_tp1 = self.target_q_network(sample_batch.next_observations)
         # (batch_size)
-        td_targets = sample_batch.rewards + self.discount_factor * torch.max(
+        td_targets = sample_batch.rewards + self.config.DISCOUNT * torch.max(
             q_target_tp1, dim=1
         )[0] * (1 - sample_batch.dones)
         # Compute TD errors
@@ -140,7 +126,7 @@ class ExtendedDQN:
         # (batch_size)
         selected_q_values = torch.sum(q_values * one_hot_actions, dim=1)
         td_errors = selected_q_values - td_targets
-        if self.clip_td_errors:
+        if self.config.CLIP_TD_ERROR:
             td_errors = torch.clamp(td_errors, -1, 1)
         return torch.sum(td_errors ** 2)
 
@@ -148,9 +134,8 @@ class ExtendedDQN:
         target_state_dict = self.target_q_network.state_dict()
         for param_name, param_tensor in self.q_network.state_dict().items():
             target_state_dict[param_name] = (
-                (1 - self.target_network_update_coefficient)
-                * target_state_dict[param_name]
-                + self.target_network_update_coefficient * param_tensor
+                (1 - self.config.TARGET_UPDATE_COEFF) * target_state_dict[param_name]
+                + self.config.TARGET_UPDATE_COEFF * param_tensor
             )
         self.target_q_network.load_state_dict(target_state_dict)
 
