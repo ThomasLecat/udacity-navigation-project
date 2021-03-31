@@ -2,6 +2,7 @@ from collections import namedtuple
 
 import numpy as np
 import torch
+
 from navigation.environment import SingleAgentEnvWrapper
 from navigation.model import MultilayerPerceptron
 from navigation.replay_buffer import (
@@ -12,8 +13,9 @@ from navigation.replay_buffer import (
 from navigation.scheduler import SchedulerInterface
 from navigation.utils import OneHot
 
-
 NumberOfSteps = int
+
+LOG_FREQUENCY: NumberOfSteps = 100
 
 
 class ExtendedDQN:
@@ -58,7 +60,7 @@ class ExtendedDQN:
         self.target_q_network.parameters = self.q_network.parameters
 
         # Logging parameters
-        self.log_frequency = 100  # in number of episodes
+        self.log_frequency: NumberOfSteps = LOG_FREQUENCY
 
         # Optimizer
         self.optimizer = torch.optim.Adam(
@@ -66,7 +68,7 @@ class ExtendedDQN:
         )
 
         self.one_hot = OneHot(
-            batch_size=batch_size, num_digits=self.num_actions, device=self.device,
+            batch_size=batch_size, num_digits=self.num_actions, device=self.device
         )
 
     def compute_action(self, observation: np.ndarray, epsilon: float) -> int:
@@ -130,7 +132,8 @@ class ExtendedDQN:
         q_target_tp1 = self.target_q_network(sample_batch.next_observations)
         # (batch_size)
         td_targets = (
-            sample_batch.rewards + self.discount_factor * torch.max(q_target_tp1, dim=1)[0]
+            sample_batch.rewards
+            + self.discount_factor * torch.max(q_target_tp1, dim=1)[0]
         )
         # TODO: Set TD targets to 0 when done
         # Compute TD errors
