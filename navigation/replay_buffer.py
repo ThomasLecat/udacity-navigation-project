@@ -10,7 +10,7 @@ class ReplayBufferInterface:
         self.buffer_indexes = np.arange(buffer_size)
         self.sample_batch = namedtuple(
             "SampleBatch",
-            ["observations", "actions", "rewards", "next_observations", "dones"],
+            ["observations", "actions", "rewards", "dones", "next_observations"],
         )
 
     def add(self, observation, action, reward, next_obs, done):
@@ -30,7 +30,7 @@ class ReplayBufferInterface:
         next_observations = np.stack([s.next_observation for s in samples], axis=0)
 
         return self.sample_batch(
-            observations, actions, rewards, next_observations, dones
+            observations, actions, rewards, dones, next_observations
         )
 
     @property
@@ -48,17 +48,15 @@ class UniformReplayBuffer(ReplayBufferInterface):
         super().__init__(buffer_size)
         self.transition_ = namedtuple(
             "Transition",
-            ["observation", "action", "reward", "next_observation", "done"],
+            ["observation", "action", "reward", "done", "next_observation"],
         )
 
-    def add(self, observation, action, reward, next_obs, done):
-        self.buffer.append(self.transition(observation, action, reward, next_obs, done))
+    def add(self, observation, action, reward, done, next_obs):
+        self.buffer.append(self.transition(observation, action, reward, done, next_obs))
 
     @property
     def transition(self) -> namedtuple:
         return self.transition_
 
     def probabilities(self):
-        return np.full(
-            fill_value=1 / len(self.buffer), shape=len(self.buffer)
-        )
+        return np.full(fill_value=1 / len(self.buffer), shape=len(self.buffer))
