@@ -13,11 +13,17 @@ class SingleAgentEnvWrapper:
     Call the preprocessor on observations before sending them back to the agent.
     """
 
-    def __init__(self, env: UnityEnvironment, preprocessor: PreprocessorInterface):
+    def __init__(
+        self,
+        env: UnityEnvironment,
+        preprocessor: PreprocessorInterface,
+        skip_frames: int,
+    ):
         self.env = env
         self.preprocessor = preprocessor
         self.brain_name = env.brain_names[0]
         self.brain = env.brains[self.brain_name]
+        self.skip_frames = skip_frames
 
     def reset(self) -> np.ndarray:
         env_info = self.env.reset()[self.brain_name]
@@ -36,7 +42,8 @@ class SingleAgentEnvWrapper:
         )
 
     def step(self, action: int) -> Tuple:
-        env_info = self.env.step(action)[self.brain_name]
+        for _ in range(self.skip_frames):
+            env_info = self.env.step(action)[self.brain_name]
         assert (
             len(env_info.rewards)
             == len(env_info.local_done)

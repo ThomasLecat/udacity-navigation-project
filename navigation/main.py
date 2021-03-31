@@ -10,7 +10,7 @@ from navigation.scheduler import LinearScheduler, Milestone
 def main():
     preprocessor = IdentityPreprocessor()
     env = UnityEnvironment("Banana.app")
-    env = SingleAgentEnvWrapper(env, preprocessor)
+    env = SingleAgentEnvWrapper(env, preprocessor, skip_frames=4)
     replay_buffer = UniformReplayBuffer(buffer_size=1_000_000)
     epsilon_scheduler = LinearScheduler(
         [
