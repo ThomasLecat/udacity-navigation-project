@@ -32,7 +32,6 @@ class ExtendedDQN:
         clip_td_errors: bool,
         update_frequency: NumberOfSteps = 1,
     ):
-        # TODO: make config for hyperparameters.
         self.env: SingleAgentEnvWrapper = env
         self.replay_buffer: ReplayBufferInterface = replay_buffer
         self.batch_size: int = batch_size
@@ -131,11 +130,9 @@ class ExtendedDQN:
         # (batch_size, num_actions)
         q_target_tp1 = self.target_q_network(sample_batch.next_observations)
         # (batch_size)
-        td_targets = (
-            sample_batch.rewards
-            + self.discount_factor * torch.max(q_target_tp1, dim=1)[0]
-        )
-        # TODO: Set TD targets to 0 when done
+        td_targets = sample_batch.rewards + self.discount_factor * torch.max(
+            q_target_tp1, dim=1
+        )[0] * (1 - sample_batch.dones)
         # Compute TD errors
         # (batch_size, num_actions)
         q_values = self.q_network(sample_batch.observations)

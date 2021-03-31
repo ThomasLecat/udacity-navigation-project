@@ -30,7 +30,7 @@ class ReplayBufferInterface:
         observations = np.stack([s.observation for s in samples], axis=0)
         actions = np.array([s.action for s in samples], dtype=np.int)
         rewards = np.array([s.reward for s in samples], dtype=np.float32)
-        dones = np.array([s.done for s in samples], dtype=np.int)
+        dones = np.array([s.done for s in samples], dtype=np.float32)
         next_observations = np.stack([s.next_observation for s in samples], axis=0)
 
         return SampleBatch(observations, actions, rewards, dones, next_observations)
