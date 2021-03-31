@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 
-milestone = namedtuple("Milestone", ["step", "value"])
+Milestone = namedtuple("Milestone", ["step", "value"])
 
 
 class SchedulerInterface:
@@ -18,7 +18,7 @@ class LinearScheduler(SchedulerInterface):
     are respectively the first and last values.
     """
 
-    def __init__(self, milestones: List[milestone]):
+    def __init__(self, milestones: List[Milestone]):
         assert len(set([m.step for m in milestones])) == len(
             milestones
         ), f"Received non-unique step values in LinearScheduler initialization: {milestones}"

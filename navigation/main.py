@@ -2,7 +2,7 @@ from navigation.agent import ExtendedDQN
 from navigation.environment import SingleAgentEnvWrapper
 from navigation.preprocessors import IdentityPreprocessor
 from navigation.replay_buffer import UniformReplayBuffer
-from navigation.scheduler import LinearScheduler, milestone
+from navigation.scheduler import LinearScheduler, Milestone
 from unityagents import UnityEnvironment
 
 
@@ -13,8 +13,8 @@ def main():
     replay_buffer = UniformReplayBuffer(buffer_size=1_000_000)
     epsilon_scheduler = LinearScheduler(
         [
-            milestone(step=0, value=1.0),
-            milestone(step=1_000_000, value=0.1),
+            Milestone(step=0, value=1.0),
+            Milestone(step=1_000_000, value=0.1),
         ]
     )
     agent = ExtendedDQN(
