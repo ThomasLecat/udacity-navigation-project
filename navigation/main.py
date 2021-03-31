@@ -1,9 +1,10 @@
+from unityagents import UnityEnvironment
+
 from navigation.agent import ExtendedDQN
 from navigation.environment import SingleAgentEnvWrapper
 from navigation.preprocessors import IdentityPreprocessor
 from navigation.replay_buffer import UniformReplayBuffer
 from navigation.scheduler import LinearScheduler, Milestone
-from unityagents import UnityEnvironment
 
 
 def main():
