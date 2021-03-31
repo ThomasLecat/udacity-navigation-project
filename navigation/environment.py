@@ -6,7 +6,7 @@ from unityagents import UnityEnvironment
 from navigation.preprocessors import PreprocessorInterface
 
 
-class EnvWrapper:
+class SingleAgentEnvWrapper:
     """Wrap the Unity environment into a format similar to single agents gym
     environments.
 

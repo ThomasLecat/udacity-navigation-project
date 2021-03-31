@@ -1,5 +1,5 @@
 from navigation.agent import ExtendedDQN
-from navigation.environment import EnvWrapper
+from navigation.environment import SingleAgentEnvWrapper
 from navigation.preprocessors import IdentityPreprocessor
 from navigation.replay_buffer import UniformReplayBuffer
 from navigation.scheduler import LinearScheduler, milestone
@@ -9,7 +9,7 @@ from unityagents import UnityEnvironment
 def main():
     preprocessor = IdentityPreprocessor()
     env = UnityEnvironment("Banana.app")
-    env = EnvWrapper(env, preprocessor)
+    env = SingleAgentEnvWrapper(env, preprocessor)
     replay_buffer = UniformReplayBuffer(buffer_size=1_000_000)
     epsilon_scheduler = LinearScheduler(
         [

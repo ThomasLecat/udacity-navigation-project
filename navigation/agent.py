@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import numpy as np
 import torch
-from navigation.environment import EnvWrapper
+from navigation.environment import SingleAgentEnvWrapper
 from navigation.model import MultilayerPerceptron
 from navigation.replay_buffer import ReplayBufferInterface
 from navigation.scheduler import SchedulerInterface
@@ -14,7 +14,7 @@ NumberOfSteps = int
 class ExtendedDQN:
     def __init__(
         self,
-        env: EnvWrapper,
+        env: SingleAgentEnvWrapper,
         replay_buffer: ReplayBufferInterface,
         batch_size: int,
         epsilon_scheduler: SchedulerInterface,
@@ -26,7 +26,7 @@ class ExtendedDQN:
         update_frequency: NumberOfSteps = 1,
     ):
         # TODO: make config for hyperparameters.
-        self.env: EnvWrapper = env
+        self.env: SingleAgentEnvWrapper = env
         self.replay_buffer: ReplayBufferInterface = replay_buffer
         self.batch_size: int = batch_size
         self.epsilon_scheduler: SchedulerInterface = epsilon_scheduler
