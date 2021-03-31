@@ -4,7 +4,11 @@ import numpy as np
 import torch
 from navigation.environment import SingleAgentEnvWrapper
 from navigation.model import MultilayerPerceptron
-from navigation.replay_buffer import ReplayBufferInterface
+from navigation.replay_buffer import (
+    ReplayBufferInterface,
+    SampleBatch,
+    TorchSampleBatch,
+)
 from navigation.scheduler import SchedulerInterface
 
 
@@ -111,22 +115,19 @@ class ExtendedDQN:
         # Soft update of target Q network
         self.soft_update_target_network()
 
-    def compute_loss(self, sample_batch):
+    def compute_loss(self, sample_batch: SampleBatch):
         # Compute TD targets
-        # (batch_size, obs_size)
-        next_obs = torch.Tensor(sample_batch.next_observations).to(self.device)
+        sample_batch: TorchSampleBatch = convert_to_torch(sample_batch, self.device)
         # (batch_size, num_actions)
-        q_target_tp1 = self.target_q_network(next_obs)
+        q_target_tp1 = self.target_q_network(sample_batch.next_observations)
         # (batch_size)
-        td_targets = sample_batch.rewards + self.discount_factor * q_target_tp1.max(
-            dim=1
-        )[0]
+        td_targets = (
+            sample_batch.rewards + self.discount_factor * torch.max(q_target_tp1, dim=1)[0]
+        )
         # TODO: Set TD targets to 0 when done
         # Compute TD errors
-        # (batch_size, obs_size)
-        observations = torch.Tensor(sample_batch.observations).to(self.device)
         # (batch_size)
-        q_values = self.q_network(observations)
+        q_values = self.q_network(sample_batch.observations)
         td_errors = q_values - td_targets
         if self.clip_td_errors:
             td_errors = torch.clip(td_errors, -1, 1)
@@ -141,3 +142,12 @@ class ExtendedDQN:
                 + self.target_network_update_coefficient * param_tensor
             )
         self.target_q_network.load_state_dict(target_state_dict)
+
+
+def convert_to_torch(sample_batch: SampleBatch, device) -> TorchSampleBatch:
+    return TorchSampleBatch(
+        **{
+            key: torch.from_numpy(value).to(device)
+            for key, value in sample_batch._asdict().items()
+        }
+    )

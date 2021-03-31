@@ -42,7 +42,7 @@ class SingleAgentEnvWrapper:
             == 1
         ), "More than one agent found for this environment."
         return (
-            env_info.vector_observations[0],
+            env_info.vector_observations[0].astype(np.float32),
             env_info.rewards[0],
             env_info.local_done[0],
             None,

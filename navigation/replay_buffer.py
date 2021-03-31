@@ -7,6 +7,9 @@ import numpy as np
 SampleBatch = namedtuple(
     "SampleBatch", ["observations", "actions", "rewards", "dones", "next_observations"]
 )
+TorchSampleBatch = namedtuple(
+    "TorchSampleBatch", ["observations", "actions", "rewards", "dones", "next_observations"]
+)
 
 
 class ReplayBufferInterface:
@@ -26,8 +29,8 @@ class ReplayBufferInterface:
         samples = [self.buffer[idx] for idx in sampled_indexes]
         observations = np.stack([s.observation for s in samples], axis=0)
         actions = np.array([s.action for s in samples], dtype=np.int)
-        rewards = np.array([s.reward for s in samples], dtype=np.float)
-        dones = np.array([s.done for s in samples], dtype=np.bool)
+        rewards = np.array([s.reward for s in samples], dtype=np.float32)
+        dones = np.array([s.done for s in samples], dtype=np.int)
         next_observations = np.stack([s.next_observation for s in samples], axis=0)
 
         return SampleBatch(observations, actions, rewards, dones, next_observations)
