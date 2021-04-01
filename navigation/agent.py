@@ -70,7 +70,7 @@ class ExtendedDQN:
             return q_values.argmax().item()
         return np.random.choice(self.num_actions)
 
-    def train(self, num_episodes):
+    def train(self, num_episodes: int) -> None:
         cumulative_reward: float = 0.0
         num_steps_sampled: int = 0
         for episode_idx in range(1, num_episodes + 1):
@@ -100,7 +100,7 @@ class ExtendedDQN:
                     break
             num_steps_sampled += episode_length
 
-    def update_once(self):
+    def update_once(self) -> None:
         """Perform one SGD update."""
         self.optimizer.zero_grad()
         sample_batch: namedtuple = self.replay_buffer.sample(self.config.BATCH_SIZE)
@@ -110,7 +110,7 @@ class ExtendedDQN:
         # Soft update of target Q network
         self.soft_update_target_network()
 
-    def compute_loss(self, sample_batch: SampleBatch):
+    def compute_loss(self, sample_batch: SampleBatch) -> torch.Tensor:
         # Compute TD targets
         sample_batch: TorchSampleBatch = convert_to_torch(sample_batch, self.device)
         # (batch_size, num_actions)

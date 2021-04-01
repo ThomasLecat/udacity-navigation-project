@@ -17,10 +17,10 @@ class ReplayBufferInterface:
         self.buffer = deque([], maxlen=buffer_size)
         self.buffer_indexes = np.arange(buffer_size)
 
-    def add(self, observation, action, reward, next_obs, done):
+    def add(self, observation, action, reward, next_obs, done) -> None:
         """Add one transition to the replay buffer"""
 
-    def sample(self, num_samples: int):
+    def sample(self, num_samples: int) -> SampleBatch:
         sampled_indexes = np.random.choice(
             self.buffer_indexes[: len(self.buffer)],
             size=num_samples,
@@ -53,12 +53,19 @@ class UniformReplayBuffer(ReplayBufferInterface):
             ["observation", "action", "reward", "done", "next_observation"],
         )
 
-    def add(self, observation, action, reward, done, next_obs):
+    def add(
+        self,
+        observation: np.ndarray,
+        action: int,
+        reward: float,
+        done: bool,
+        next_obs: np.ndarray,
+    ) -> None:
         self.buffer.append(self.transition(observation, action, reward, done, next_obs))
 
     @property
     def transition(self) -> namedtuple:
         return self.Transition
 
-    def probabilities(self):
+    def probabilities(self) -> np.ndarray:
         return np.full(fill_value=1 / len(self.buffer), shape=len(self.buffer))
