@@ -1,3 +1,5 @@
+import argparse
+
 import torch
 from unityagents import UnityEnvironment
 
@@ -9,10 +11,10 @@ from navigation.replay_buffer import UniformReplayBuffer
 from navigation.scheduler import LinearScheduler, Milestone
 
 
-def main():
+def main(environment_path: str):
     config = DQNConfig
     preprocessor = IdentityPreprocessor()
-    env = UnityEnvironment("Banana.app", no_graphics=True)
+    env = UnityEnvironment(environment_path, no_graphics=True)
     env = SingleAgentEnvWrapper(env, preprocessor, skip_frames=config.SKIP_FRAMES)
     replay_buffer = UniformReplayBuffer(config.BUFFER_SIZE)
     epsilon_scheduler = LinearScheduler(
@@ -33,4 +35,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--environment_path",
+        "-p",
+        type=str,
+        help="Path to your single agent Unity environment file.",
+    )
+    args = parser.parse_args()
+    main(args.environment_path)
