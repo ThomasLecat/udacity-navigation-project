@@ -1,3 +1,4 @@
+import torch
 from unityagents import UnityEnvironment
 
 from navigation.agent import ExtendedDQN
@@ -27,6 +28,8 @@ def main():
         config=config,
     )
     agent.train(num_episodes=500)
+    with open("dqn_checkpoint.pt", "w") as f:
+        torch.save(agent.q_network, f)
 
 
 if __name__ == "__main__":
