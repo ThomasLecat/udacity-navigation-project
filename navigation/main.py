@@ -16,8 +16,8 @@ def main():
     replay_buffer = UniformReplayBuffer(config.BUFFER_SIZE)
     epsilon_scheduler = LinearScheduler(
         [
-            Milestone(config.DECAY_START, config.EPSILON_START),
-            Milestone(config.DECAY_END, config.EPSILON_END),
+            Milestone(config.EPS_DECAY_START, config.EPSILON_START),
+            Milestone(config.EPS_DECAY_END, config.EPSILON_END),
         ]
     )
     agent = ExtendedDQN(
