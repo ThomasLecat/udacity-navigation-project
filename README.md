@@ -14,20 +14,19 @@ Learning program.
 
 1. Follow the instructions from Udacity's [README](https://github.com/udacity/deep-reinforcement-learning#dependencies) 
 to create the environment and install the dependencies.
-2. Download the RL environment for your OS, place the file in the 
-navigation/ folder and unzip (or decompress) it. 
+1. Install the project's package: `$ source activate drlnd && pip install -e .`
+1. Download the RL environment for your OS, place the file in the navigation/ folder 
+and unzip (or decompress) it. 
 
 *  Linux: click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip)
 *  Mac OSX: click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana.app.zip)
 *  Windows (32-bit): click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86.zip)
 *  Windows (64-bit): click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86_64.zip)
 
-(Optional) To contribute, install the additional dependencies and pre-commits:
+(Optional) To contribute, install the pre-commits:
 
 ```bash
-$ source activate drlnd
-$ pip install -r requirements.txt
-# pre-commit install
+$ pre-commit install
 ```
 
 ## Description of the environment
