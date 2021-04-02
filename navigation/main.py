@@ -9,6 +9,7 @@ from navigation.environment import SingleAgentEnvWrapper
 from navigation.preprocessors import IdentityPreprocessor
 from navigation.replay_buffer import UniformReplayBuffer
 from navigation.scheduler import LinearScheduler, Milestone
+from navigation.utils import write_list_to_csv
 
 
 def main(environment_path: str):
@@ -29,7 +30,9 @@ def main(environment_path: str):
         epsilon_scheduler=epsilon_scheduler,
         config=config,
     )
-    agent.train(num_episodes=500)
+    reward_per_episode = agent.train(num_episodes=500)
+    with open("reward_per_episode.csv", "w") as f:
+        write_list_to_csv(f, reward_per_episode)
     with open("dqn_checkpoint.pt", "w") as f:
         torch.save(agent.q_network, f)
 
