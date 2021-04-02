@@ -12,7 +12,7 @@ from navigation.scheduler import LinearScheduler, Milestone
 from navigation.utils import write_list_to_csv
 
 
-def main(environment_path: str):
+def main(environment_path: str, num_episodes: int):
     config = DQNConfig
     preprocessor = IdentityPreprocessor()
     env = UnityEnvironment(environment_path, no_graphics=True)
@@ -30,7 +30,7 @@ def main(environment_path: str):
         epsilon_scheduler=epsilon_scheduler,
         config=config,
     )
-    reward_per_episode = agent.train(num_episodes=500)
+    reward_per_episode = agent.train(num_episodes=num_episodes)
     with open("reward_per_episode.csv", "w") as f:
         write_list_to_csv(f, reward_per_episode)
     with open("dqn_checkpoint.pt", "w") as f:
@@ -45,5 +45,12 @@ if __name__ == "__main__":
         type=str,
         help="Path to your single agent Unity environment file.",
     )
+    parser.add_argument(
+        "--num_episodes",
+        "-n",
+        type=int,
+        default=500,
+        help="Number of episodes on which to train the agent",
+    )
     args = parser.parse_args()
-    main(args.environment_path)
+    main(args.environment_path, args.num_episodes)
