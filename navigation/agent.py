@@ -127,6 +127,7 @@ class ExtendedDQN:
         td_targets = sample_batch.rewards + self.config.DISCOUNT * torch.max(
             q_target_tp1, dim=1
         )[0] * (1 - sample_batch.dones)
+        td_targets.detach()
         # Compute TD errors
         # (batch_size, num_actions)
         q_values = self.q_network(sample_batch.observations)
