@@ -35,13 +35,11 @@ class ExtendedDQN:
         )
 
         # Create networks
-        obs_size: int = env.obs_size
-        self.num_actions: int = env.num_actions
         self.q_network = MultilayerPerceptron(
-            input_size=obs_size, hidden_layers=[64, 64], output_size=self.num_actions
+            input_size=env.obs_size, hidden_layers=[64, 64], output_size=env.num_actions
         ).to(self.device)
         self.target_q_network = MultilayerPerceptron(
-            input_size=obs_size, hidden_layers=[64, 64], output_size=self.num_actions
+            input_size=env.obs_size, hidden_layers=[64, 64], output_size=env.num_actions
         ).to(self.device)
         self.target_q_network.load_state_dict(self.q_network.state_dict())
 
@@ -51,9 +49,7 @@ class ExtendedDQN:
         )
 
         self.one_hot = OneHot(
-            batch_size=config.BATCH_SIZE,
-            num_digits=self.num_actions,
-            device=self.device,
+            batch_size=config.BATCH_SIZE, num_digits=env.num_actions, device=self.device
         )
 
     def compute_action(self, observation: np.ndarray, epsilon: float) -> int:
@@ -68,7 +64,7 @@ class ExtendedDQN:
                 # (1, num_actions) -> (num_actions)
                 q_values = q_values.squeeze()
             return q_values.argmax().item()
-        return np.random.choice(self.num_actions)
+        return np.random.choice(self.env.num_actions)
 
     def train(self, num_episodes: int) -> List:
         """Train the agent for 'num_episodes' and return the list of rewards

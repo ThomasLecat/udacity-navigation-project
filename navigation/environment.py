@@ -25,6 +25,11 @@ class SingleAgentEnvWrapper:
         self.brain = env.brains[self.brain_name]
         self.skip_frames = skip_frames
 
+        self._num_actions = self.brain.vector_action_space_size
+        self._obs_size = self.preprocessor.observation_size(
+            raw_obs_size=self.brain.vector_observation_space_size
+        )
+
     def reset(self) -> np.ndarray:
         env_info = self.env.reset()[self.brain_name]
         return self.preprocessor.transform(
@@ -33,13 +38,11 @@ class SingleAgentEnvWrapper:
 
     @property
     def num_actions(self) -> int:
-        return self.brain.vector_action_space_size
+        return self._num_actions
 
     @property
     def obs_size(self) -> int:
-        return self.preprocessor.observation_size(
-            raw_obs_size=self.brain.vector_observation_space_size
-        )
+        return self._obs_size
 
     def step(self, action: int) -> Tuple:
         for _ in range(self.skip_frames):
