@@ -76,7 +76,7 @@ class ExtendedDQN:
         for episode_idx in range(1, num_episodes + 1):
             # Log progress
             if episode_idx % self.config.LOG_EVERY == 0:
-                window_rewards = reward_per_episode[self.config.LOG_EVERY :]
+                window_rewards = reward_per_episode[-self.config.LOG_EVERY :]
                 print(
                     f"episode {episode_idx}/{num_episodes}, "
                     f"avg. episode reward: {sum(window_rewards) / len(window_rewards)}, "
