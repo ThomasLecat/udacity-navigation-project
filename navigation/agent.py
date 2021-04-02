@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import ClassVar
+from typing import ClassVar, List
 
 import numpy as np
 import torch
@@ -70,27 +70,33 @@ class ExtendedDQN:
             return q_values.argmax().item()
         return np.random.choice(self.num_actions)
 
-    def train(self, num_episodes: int) -> None:
-        cumulative_reward: float = 0.0
+    def train(self, num_episodes: int) -> List:
+        """Train the agent for 'num_episodes' and return the list of rewards
+        per episode (summed over all steps of the episode).
+        """
+        reward_per_episode: List[float] = []
         num_steps_sampled: int = 0
         for episode_idx in range(1, num_episodes + 1):
+            # Log progress
             if episode_idx % self.config.LOG_EVERY == 0:
+                window_rewards = reward_per_episode[: self.config.LOG_EVERY]
                 print(
                     f"episode {episode_idx}/{num_episodes}, "
-                    f"average episode reward: {cumulative_reward / self.config.LOG_EVERY}, "
+                    f"avg. episode reward: {sum(window_rewards) / len(window_rewards)}, "
                     f"num steps sampled: {num_steps_sampled}"
                 )
-                cumulative_reward = 0.0
+            # Sample one episode
             observation = self.env.reset()
             episode_length: int = 0
+            episode_reward: float = 0.0
             while True:
                 epsilon = self.epsilon_scheduler.get_value(num_steps_sampled)
                 action = self.compute_action(observation, epsilon)
                 next_obs, reward, done, _ = self.env.step(action)
                 self.replay_buffer.add(observation, action, reward, done, next_obs)
-                cumulative_reward += reward
                 observation = next_obs
                 episode_length += 1
+                episode_reward += reward
                 if (
                     episode_length % self.config.UPDATE_EVERY == 0
                     and num_steps_sampled > self.config.LEARNING_STARTS
@@ -98,7 +104,9 @@ class ExtendedDQN:
                     self.update_once()
                 if done is True:
                     break
+            reward_per_episode.append(episode_reward)
             num_steps_sampled += episode_length
+        return reward_per_episode
 
     def update_once(self) -> None:
         """Perform one SGD update."""
