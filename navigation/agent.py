@@ -124,12 +124,7 @@ class ExtendedDQN:
         # Compute TD targets
         sample_batch: TorchSampleBatch = convert_to_torch(sample_batch, self.device)
         # (batch_size, num_actions)
-        q_target_tp1 = self.target_q_network(sample_batch.next_observations)
-        # (batch_size)
-        td_targets = sample_batch.rewards + self.config.DISCOUNT * torch.max(
-            q_target_tp1, dim=1
-        )[0] * (1 - sample_batch.dones)
-        td_targets.detach()
+        td_targets = self.compute_td_target(sample_batch)
         # Compute TD errors
         # (batch_size, num_actions)
         q_values = self.q_network(sample_batch.observations)
@@ -141,7 +136,35 @@ class ExtendedDQN:
             td_errors = torch.clamp(td_errors, -1, 1)
         return torch.sum(td_errors ** 2)
 
-    def soft_update_target_network(self):
+    def compute_td_target(self, sample_batch: SampleBatch) -> torch.LongTensor:
+        # (batch_size, num_actions)
+        q_target_tp1 = self.target_q_network(sample_batch.next_observations)
+        if self.config.DOUBLE_Q:
+            # (batch_size, num_actions)
+            q_tp1 = self.q_network(sample_batch.next_observations)
+            # (batch_size, num_actions)
+            greedy_actions_tp1 = self.one_hot(torch.argmax(q_tp1, dim=1))
+            q_target_tp1 = self.target_q_network(sample_batch.next_observations)
+            # (batch_size)
+            # fmt: off
+            td_targets = (
+                sample_batch.rewards
+                + (1 - sample_batch.dones)
+                * self.config.DISCOUNT
+                * torch.sum(q_target_tp1 * greedy_actions_tp1, dim=1)
+            )
+            # fmt: on
+        else:
+            # (batch_size)
+            td_targets = (
+                sample_batch.rewards
+                + (1 - sample_batch.dones)
+                * self.config.DISCOUNT
+                * torch.max(q_target_tp1, dim=1)[0]
+            )
+        return td_targets.detach()
+
+    def soft_update_target_network(self) -> None:
         target_state_dict = self.target_q_network.state_dict()
         for param_name, param_tensor in self.q_network.state_dict().items():
             target_state_dict[param_name] = (
