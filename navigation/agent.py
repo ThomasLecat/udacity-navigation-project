@@ -13,7 +13,7 @@ from navigation.replay_buffer import (
     TorchSampleBatch,
 )
 from navigation.scheduler import SchedulerInterface
-from navigation.utils import OneHot
+from navigation.utils import OneHot, convert_to_torch
 
 
 class ExtendedDQN:
@@ -146,12 +146,3 @@ class ExtendedDQN:
                 + self.config.TARGET_UPDATE_COEFF * param_tensor
             )
         self.target_q_network.load_state_dict(target_state_dict)
-
-
-def convert_to_torch(sample_batch: SampleBatch, device) -> TorchSampleBatch:
-    return TorchSampleBatch(
-        **{
-            key: torch.from_numpy(value).to(device)
-            for key, value in sample_batch._asdict().items()
-        }
-    )

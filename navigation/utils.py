@@ -1,5 +1,7 @@
 import torch
 
+from navigation.replay_buffer import SampleBatch, TorchSampleBatch
+
 
 class OneHot:
     """
@@ -12,3 +14,12 @@ class OneHot:
     def __call__(self, labels):
         self.one_hot.zero_()
         return self.one_hot.scatter_(1, labels.view(-1, 1), 1)
+
+
+def convert_to_torch(sample_batch: SampleBatch, device) -> TorchSampleBatch:
+    return TorchSampleBatch(
+        **{
+            key: torch.from_numpy(value).to(device)
+            for key, value in sample_batch._asdict().items()
+        }
+    )
