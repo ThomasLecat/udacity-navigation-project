@@ -3,9 +3,9 @@
 This repository implements an RL agent that solves the Unity banana environment.
 
 The agent is a DQN with the following extensions:
-*  Double DQN
-*  Dueling DQN
-*  Prioritized Experience Replay
+*  [x] Double DQN
+*  [ ] Dueling DQN *---- coming soon -----*
+*  [ ] Prioritized Experience Replay    *---- coming soon ----*
 
 ## Installation
 
@@ -23,7 +23,7 @@ and unzip (or decompress) it.
 *  Windows (32-bit): click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86.zip)
 *  Windows (64-bit): click [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86_64.zip)
 
-(Optional) To contribute, install the pre-commits:
+*(Optional)* To contribute, install the pre-commits:
 
 ```bash
 $ pre-commit install
@@ -35,8 +35,8 @@ A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is
 provided for collecting a blue banana. The goal is to collect as many yellow bananas 
 as possible while avoiding blue bananas.
 
-The state space has 37 dimensions and contains the agent's velocity, along with 
-ray-based perception of objects around the agent's forward direction.
+The state space is a vector of 37 dimensions which contains the agent's velocity, along
+with ray-based perception of objects around the agent's forward direction.
 
 Four discrete actions are available, corresponding to:
 
@@ -44,3 +44,5 @@ Four discrete actions are available, corresponding to:
     1 - move backward.
     2 - turn left.
     3 - turn right.
+
+![Agent playing on Banana environment](doc/banana.gif)
