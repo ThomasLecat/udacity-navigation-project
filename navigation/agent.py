@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 import numpy as np
 import torch
@@ -20,9 +20,9 @@ class ExtendedDQN:
     def __init__(
         self,
         env: SingleAgentEnvWrapper,
-        replay_buffer: ReplayBufferInterface,
-        epsilon_scheduler: SchedulerInterface,
         config: ClassVar[DQNConfig],
+        replay_buffer: Optional[ReplayBufferInterface],
+        epsilon_scheduler: Optional[SchedulerInterface],
     ):
         """DQN agent with the following extensions:
         - [x] Double Q-learning
@@ -30,8 +30,8 @@ class ExtendedDQN:
         - [ ] Prioritized Experience Replay
         """
         self.env: SingleAgentEnvWrapper = env
-        self.replay_buffer: ReplayBufferInterface = replay_buffer
-        self.epsilon_scheduler: SchedulerInterface = epsilon_scheduler
+        self.replay_buffer: Optional[ReplayBufferInterface] = replay_buffer
+        self.epsilon_scheduler: Optional[SchedulerInterface] = epsilon_scheduler
         self.config: ClassVar[DQNConfig] = config
 
         # Use GPU if available
