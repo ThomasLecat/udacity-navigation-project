@@ -69,4 +69,7 @@ Four discrete actions are available, corresponding to:
     2 - turn left.
     3 - turn right.
 
+The environment is considered solved when the agent receives an average reward of at 
+least +13 over 100 consecutive episodes.
+
 ![Agent playing on Banana environment](doc/banana.gif)
