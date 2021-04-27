@@ -24,6 +24,11 @@ class ExtendedDQN:
         epsilon_scheduler: SchedulerInterface,
         config: ClassVar[DQNConfig],
     ):
+        """DQN agent with the following extensions:
+        - [x] Double Q-learning
+        - [ ] Dueling Q-learning
+        - [ ] Prioritized Experience Replay
+        """
         self.env: SingleAgentEnvWrapper = env
         self.replay_buffer: ReplayBufferInterface = replay_buffer
         self.epsilon_scheduler: SchedulerInterface = epsilon_scheduler
@@ -67,8 +72,8 @@ class ExtendedDQN:
         return np.random.choice(self.env.num_actions)
 
     def train(self, num_episodes: int) -> List:
-        """Train the agent for 'num_episodes' and return the list of rewards
-        per episode (summed over all steps of the episode).
+        """Train the agent for 'num_episodes' and return the list of undiscounted
+        cumulated rewards per episode (sum of rewards over all steps of the episode).
         """
         reward_per_episode: List[float] = []
         num_steps_sampled: int = 0
@@ -102,12 +107,13 @@ class ExtendedDQN:
                     self.update_once()
                 if done is True:
                     break
+
             reward_per_episode.append(episode_reward)
             num_steps_sampled += episode_length
         return reward_per_episode
 
     def update_once(self) -> None:
-        """Perform one SGD update."""
+        """Perform one Adam update."""
         self.optimizer.zero_grad()
         sample_batch: namedtuple = self.replay_buffer.sample(self.config.BATCH_SIZE)
         loss = self.compute_loss(sample_batch)
@@ -161,6 +167,11 @@ class ExtendedDQN:
         return td_targets.detach()
 
     def soft_update_target_network(self) -> None:
+        """Update the target network slowly towards the main network.
+
+        The magnitude of the update is determined by the config parameter
+        TARGET_UPDATE_COEFF, often referred as \tau in papers.
+        """
         target_state_dict = self.target_q_network.state_dict()
         for param_name, param_tensor in self.q_network.state_dict().items():
             target_state_dict[param_name] = (

@@ -46,6 +46,9 @@ class ReplayBufferInterface:
 
 
 class UniformReplayBuffer(ReplayBufferInterface):
+    """Replay buffer without priorities. Sample transitions uniformly.
+    """
+
     def __init__(self, buffer_size: int):
         super().__init__(buffer_size)
         self.Transition = namedtuple(

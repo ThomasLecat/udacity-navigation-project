@@ -13,6 +13,9 @@ from navigation.utils import write_list_to_csv
 
 
 def main(environment_path: str, num_episodes: int):
+    """Train the agent for 'num_episodes', save the score for each training episode
+    and the checkpoint of the trained agent.
+    """
     config = DQNConfig
     preprocessor = IdentityPreprocessor()
     env = UnityEnvironment(environment_path, no_graphics=True)

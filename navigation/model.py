@@ -4,6 +4,10 @@ import torch.nn as nn
 
 
 class MultilayerPerceptron(nn.Module):
+    """Simple dense network in PyTorch.
+
+    The number and shape of dense layers can be parametrized in the config file."""
+
     def __init__(self, input_size: int, hidden_layers: List[int], output_size: int):
         super().__init__()
         layers = []
