@@ -29,6 +29,30 @@ and unzip (or decompress) it.
 $ pre-commit install
 ```
 
+## Usage
+
+Before training or evaluating an agent, make sure you conda environment is activated:
+```
+$ source activate drlnd
+```
+
+### Training
+
+1. Tune DQN's learning parameters in `navigation/config.py`
+2. run `python navigation/train.py --environment_path /path/to/Banana.app`. You can 
+also specify the number of training episodes with the `--num_episodes` argument.
+
+At the end of training, two files are saved on disk:
+*  `dqn_checkpoint.pt`: PyTorch checkpoint containing the trained model's weights.
+*  `reward_per_episode.csv`: score of all training episodes.
+
+### Evaluation
+
+Using the same config parameters as in training, run:
+```
+python navigation/evaluate.py --environment_path /path/to/Banana.app --checkpoint_path dqn_checkpoint.pt --show_graphics True
+```
+
 ## Description of the environment
 
 A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is 
