@@ -6,6 +6,13 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
+\usepackage{graphicx}
+
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash\hspace{0pt}}m{#1}}
+
+\setlength{\parindent}{0cm}
+
 \title{Udacity Navigation Project}
 \author{Thomas Lecat}
 \date{April 2021}
@@ -14,15 +21,12 @@
 
     \maketitle
 
+    \section{Environment}\label{sec:environment}
 
-    \section{Udacity RL Nanodegree project 1: Navigation}
+    The environment is described as Markov Decision Process $(S, A, R, p, \gamma)$ with unknown dynamics.
+    The goal is to approximate the optimal policy $\pi^*$ that maximizes the upcoming cumulative reward in every state.
 
-    The environment is described as Markov Decision Process $(S, A, R, p, \gamma)$ with
-    unknown dynamics. The goal is to approximate the optimal policy $\pi^*$ maximizing
-    the upcoming cumulative reward in every state.
-
-    This project uses value based methods, which seek to approximate the optimal $Q$ value
-    $Q^*$, defined as:
+    This project uses value based methods, which seek to approximate the optimal $Q$ value $Q^*$, defined as:
     \[
     Q^*(s, a) = \max_{\pi} \mathbb{E}_{\pi} (\sum_{t} \gamma^t r_t | S_0=s, A_0=a),  \forall (a, s) \in A \times S
     \]
@@ -30,12 +34,12 @@
     Given $Q^*$, one can derive $\pi^*$ to solve the problem:
     $\pi^*(s) = \argmax_a Q^*(s, a), \forall s \in S$
 
-    \subsection{Agent}
+    \section{Agent}\label{sec:agent}
 
-    \subsubsection{DQN}
+    \subsection{DQN}\label{subsec:dqn}
 
 
-    A \href{https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf}{DQN} agent
+    A vanilla \href{https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf}{DQN} agent
     is implemented as the base solution.
 
     DQN approximates the $Q$ value by a neural network parameterized by $\theta$.
@@ -44,33 +48,31 @@
     \mathcal{L}(\theta) = \mathbb{E}_{s, a, r, s'} \big[((r + \gamma \max_{a'} Q(s', a' | \theta^-)) - Q(s, a | \theta))^2\big]
     \]
 
-    where $\theta^-$ are the parameters of a target network, slowly updated towards $\theta$
-    at every training step. This target network makes the TD target
-    $r + \gamma \max_{a'} Q(s', a' | \theta^-)$ independent from the parameters $\theta$,
+    where $\theta^-$ are the parameters of a target network, slowly updated towards $\theta$ at every training step.
+    This target network makes the TD target $r + \gamma \max_{a'} Q(s', a' | \theta^-)$ independent from the parameters $\theta$,
     which stabilizes the training.
 
+    This loss is minimized by an Adam optimizer, a variant of the Stochastic Gradient Descent algorithm.
+    At each step, the gradient is approximated from a minibatch of experiences ${(s, a, r, s', d)_i}$.
+    To avoid a strong correlation between the steps of the minibatch, transitions are stored in a large replay buffer
+    during rollouts and then sampled uniformly.
 
-    This loss is minimized by an Adam optimizer, a variant of the Stochastic Gradient
-    Descent algorithm.
-    At each step, the gradient is approximated from a minibatch of experiences
-    ${(s, a, r, s', d)_i}$. To avoid a strong correlation between the steps of the
-    minibatch, transitions are sampled uniformly from a large replay buffer.
-
-    \subsubsection{Double DQN}
+    \subsection{Double DQN}\label{subsec:double-dqn}
 
     The DQN agent is implemented in a modular way, to enable extension from recent papers to be added later.
 
     As a start, we implemented the improvements from the \href{https://arxiv.org/abs/1509.06461}{Double DQN} paper:
-    Instead of using the target network to chose the next action and estimate its value in the target, use $Q_\theta$ to chose the action, and $Q_{\theta^-}$ to estimate its value.
+    Instead of using the target network to chose the next action and estimate its value in the target, use $Q_\theta$ to chose the action,
+    and $Q_{\theta^-}$ to estimate its value.
 
-    \subsection{Hyperparemeters}
+    \section{Hyperparemeters}\label{sec:hyperparemeters}
 
     The network architecture is composed of 2 fully connected layers with 64 neurons each.
     The agent follows an $\epsilon$-greedy policy, with epsilon gradually decreasing from $1$ to $0.1$ over $30,000$ steps.
 
     The table below summarizes the main hyperparameters:
 
-    \begin{tabular}{ |p{5cm} c{1cm}|c{3cm}|c{3cm}| }
+    \begin{tabular}{ |p{5cm} C{1cm}|p{3cm}|p{3cm}| }
         \hline
         \multicolumn{4}{|c|}{Hyperparameters} \\
         \hline
@@ -88,12 +90,20 @@
         \hline
     \end{tabular}
 
-    \subsection{Results}
+    \section{Results}\label{sec:results}
 
-    Both vanilla DQN and double DQN have been trained with 3 seeds, and their results averaged.
-    The results (plot and number of episodes to solve) can be seen in the \texttt{README.md}.
+    Both vanilla DQN and double DQN have been trained with 3 seeds.
+    The reward curves are averaged over seeds and plotted below:
 
-    \subsection{Next steps}
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.5]{results/reward_per_episode.png}\label{fig:figure}
+    \end{figure}
+
+    The addition of the double DQN strategy doesn't improve the results much and both
+    agents manage to solve the environment in less than 400 episodes.
+
+    \section{Next steps}\label{sec:next-steps}
 
     The next steps for the project consist in implemented other DQN extensions such as
     \href{https://arxiv.org/abs/1511.06581}{Dueling DQN} and
